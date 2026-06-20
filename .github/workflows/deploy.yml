@@ -19,16 +19,12 @@ jobs:
       run: |
         docker build -t nginx-app .
 
-    - name: Install Trivy
-      run: |
-        sudo apt-get update
-        sudo apt-get install wget -y
-        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.65.0_Linux-64bit.deb
-        sudo dpkg -i trivy_0.65.0_Linux-64bit.deb
-
-    - name: Scan Docker Image
-      run: |
-        trivy image nginx-app
+    - name: Run Trivy Scanner
+  uses: aquasecurity/trivy-action@0.28.0
+  with:
+    image-ref: nginx-app
+    format: table
+    exit-code: 0
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
