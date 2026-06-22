@@ -1,35 +1,18 @@
-name: Nginx CI/CD Pipeline
-on:
-  push:
-    branches:
-      - main
-jobs:
-  build-scan-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+- name: Deploy to EC2
+  uses: appleboy/ssh-action@v1.0.3
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ${{ secrets.EC2_USER }}
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      set -e
 
-      - name: Build Docker Image
-        run: |
-          docker build -t nginx-app .
+      docker stop nginx-app || true
+      docker rm nginx-app || true
 
-      - name: Run Trivy Scanner
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-          trivy image --format table --exit-code 0 nginx-app
+      docker pull nginx:latest
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker stop nginx-app || true
-            docker rm nginx-app || true
-            docker pull nginx:latest
-            docker run -d \
-              --name nginx-app \
-              -p 80:80 \
-              nginx:latest
+      docker run -d \
+        --name nginx-app \
+        -p 80:80 \
+        nginx:latest
