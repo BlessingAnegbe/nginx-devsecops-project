@@ -15,7 +15,7 @@ jobs:
       - name: Run Trivy Scanner
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-          trivy image --format table --exit-code 0 nginx-app
+          trivy image --format table --exit-code 1 nginx-app
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
